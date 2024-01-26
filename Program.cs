@@ -6,10 +6,20 @@ using EasyCaching.Core;
 using System.Text.RegularExpressions;
 using Microsoft.AspNetCore.Http.Extensions;
 
+using Serilog;
+using Microsoft.AspNetCore.HttpLogging;
+
 dotenv.net.DotEnv.Load();
 
 string HOST = Environment.GetEnvironmentVariable("HOST") ?? "vjmirror.link";
+string BETTER_STACK_TOKEN = Environment.GetEnvironmentVariable("BETTER_STACK_TOKEN") ?? "";
+
 Regex CACHE_SUFFIX = CachesuffixRegex();
+
+Log.Logger = new LoggerConfiguration()
+	.WriteTo.BetterStack(sourceToken: BETTER_STACK_TOKEN)
+	.MinimumLevel.Information()
+	.CreateLogger();
 
 IEnumerable<Replacement> REPLACEMENTS = [
 	new("<script async src=\"https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-9098591903020457\" crossorigin=\"anonymous\"></script>", ""),
@@ -19,7 +29,7 @@ IEnumerable<Replacement> REPLACEMENTS = [
 	new("vjudge.csgrandeur.cn", HOST),
 	// new("vj.csgrandeur.cn", HOST),
 	new("vjudge.net.cn", HOST),
-	new("Server Time: <span class=\"currentTimeTZ\"></span>", "Server Time: <span class=\"currentTimeTZ\"></span><br>Unoffical Mirror; Powered by .NET 8.0 & YARP<br>Feedback: me[at]imken.moe"),
+	new("Server Time: <span class=\"currentTimeTZ\"></span>", "Server Time: <span class=\"currentTimeTZ\"></span><br>Unoffical Mirror; Powered by .NET 8.0 & YARP<br>Feedback (for mirror issues): me[at]imken.moe"),
 	new("https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-9098591903020457", ""),
 ];
 
@@ -40,7 +50,6 @@ builder.Services
 				requestContext.ProxyRequest.Headers.Remove("Accept-Encoding");
 				requestContext.ProxyRequest.Headers.Remove("Origin");
 				requestContext.ProxyRequest.Headers.Add("Origin", "https://vjudge.net");
-				Console.WriteLine(requestContext.ProxyRequest);
 				return new ValueTask();
 			})
 			.AddResponseTransform(async (responseContext) =>
@@ -112,7 +121,9 @@ builder.Services
 						TimeSpan.FromDays(30)
 					);
 					responseContext.HttpContext.Response.Headers.Append("X-Imken-Cache", "LOST");
-				} else {
+				}
+				else
+				{
 					responseContext.HttpContext.Response.Headers.Append("X-Imken-Cache", "BYPASS");
 				}
 
@@ -144,6 +155,14 @@ builder.Services
 		// option.UseInMemory();
 	});
 
+builder.Services
+	.AddHttpLogging(logging =>
+	{
+		logging.LoggingFields = HttpLoggingFields.All;
+		logging.CombineLogs = true;
+	});
+builder.Host.UseSerilog();
+
 var app = builder.Build();
 
 app.MapReverseProxy(proxyPipeline =>
@@ -173,7 +192,19 @@ app.MapReverseProxy(proxyPipeline =>
 });
 
 app.UseWebMarkupMin();
-app.Run();
+
+try
+{
+	app.Run();
+}
+catch (Exception ex)
+{
+	Log.Fatal("Application terminated unexpectedly\n" + ex.ToString());
+}
+finally
+{
+	Log.CloseAndFlush();
+}
 
 class Replacement(string pattern, string replacement)
 {
