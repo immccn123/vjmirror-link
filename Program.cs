@@ -26,7 +26,7 @@ partial class Program
 	[GeneratedRegex(@"\.(png|jpg|ico|jpeg|woff|woff2|ttf|otf|cpp|js|css|svg|txt)\??(.*)$")]
 	private static partial Regex CachesuffixRegex();
 
-	readonly static string HOST = Environment.GetEnvironmentVariable("BETTER_STACK_TOKEN") ?? "vjmirror.link";
+	readonly static string HOST = Environment.GetEnvironmentVariable("HOST") ?? "vjmirror.link";
 	readonly static string BETTER_STACK_TOKEN = Environment.GetEnvironmentVariable("BETTER_STACK_TOKEN") ?? "";
 
 	readonly static Regex CACHE_SUFFIX = CachesuffixRegex();
