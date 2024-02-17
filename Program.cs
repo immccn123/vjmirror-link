@@ -44,7 +44,7 @@ partial class Program
 		dotenv.net.DotEnv.Load();
 
 		Log.Logger = new LoggerConfiguration()
-			.WriteTo.BetterStack(sourceToken: BETTER_STACK_TOKEN)
+			// .WriteTo.BetterStack(sourceToken: BETTER_STACK_TOKEN)
 			.MinimumLevel.Information()
 			.CreateLogger();
 
