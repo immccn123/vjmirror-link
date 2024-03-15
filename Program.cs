@@ -34,7 +34,6 @@ partial class Program
 		new("<title>Virtual Judge</title>", "<title>Virtual Judge (Unoffical Mirror)</title>"),
 		new("vjudge.net", HOST),
 		new("vjudge.csgrandeur.cn", HOST),
-		// new("vj.csgrandeur.cn", HOST),
 		new("vjudge.net.cn", HOST),
 		new("Server Time: <span class=\"currentTimeTZ\"></span>", "Server Time: <span class=\"currentTimeTZ\"></span><br>Unoffical Mirror; Powered by .NET 8.0 & YARP<br>Feedback (for mirror issues): me[at]imken.moe"),
 	];
